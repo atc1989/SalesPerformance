@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Performance Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f4f7fa;
+            --card-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #34495e;
+            --border-color: #e0e6ed;
+            --accent-blue: #3498db;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-purple: #8e44ad;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .time-range-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .time-range-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-range-btn.active {
+            background-color: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .custom-date-container {
+            display: none;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .custom-date-container.visible {
+            display: flex;
+        }
+
+        .custom-date-input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-card h3 {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .agent-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            border-top: 4px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .agent-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            object-fit: cover;
+            border: 3px solid var(--border-color);
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .agent-card.high-performer {
+            border-top-color: var(--accent-green);
+        }
+
+        .agent-card.low-performer {
+            border-top-color: var(--accent-red);
+        }
+
+        .ranking-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+        }
+
+        .ranking-badge.rank-1 { background-color: #FFD700; }
+        .ranking-badge.rank-2 { background-color: #C0C0C0; }
+        .ranking-badge.rank-3 { background-color: #CD7F32; }
+        .ranking-badge.rank-4 { background-color: #4169E1; }
+        .ranking-badge.rank-5 { background-color: #A9A9A9; }
+        .ranking-badge.rank-6 { background-color: #778899; }
+        .ranking-badge.rank-7 { background-color: #708090; }
+        .ranking-badge.rank-8 { background-color: #696969; }
+        .ranking-badge.rank-9 { background-color: #808080; }
+        .ranking-badge.rank-10 { background-color: #A0522D; }
+
+        .agent-card h3 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .performance-indicator {
+            text-align: center;
+            font-weight: 700;
+            padding: 0.5rem;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        .performance-indicator.positive {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--accent-green);
+        }
+
+        .performance-indicator.negative {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--accent-red);
+        }
+
+        /* Rest of the previous CSS remains the same */
+        .refresh-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+        }
+
+        #card-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-screen-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+        }
+
+        .close-card-screen {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1200px) {
+            .summary-grid,
+            .agent-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid,
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Rest of the previous CSS remains the same as in the original file */
+        /* ... (previous CSS styles) ... */
+    </style>
+</head>
+<body>
+    <div id="dashboard" class="dashboard-container">
+        <div class="time-range-selector">
+            <button class="time-range-btn" data-range="daily">Daily</button>
+            <button class="time-range-btn active" data-range="weekly">Weekly</button>
+            <button class="time-range-btn" data-range="monthly">Monthly</button>
+            <button class="time-range-btn" data-range="custom">Custom</button>
+            
+            <div id="custom-date-container" class="custom-date-container">
+                <label for="start-date">From:</label>
+                <input type="date" id="start-date" class="custom-date-input">
+                <label for="end-date">To:</label>
+                <input type="date" id="end-date" class="custom-date-input">
+                <button id="apply-custom-date" class="time-range-btn">Apply</button>
+            </div>
+        </div>
+
+        <div id="summary-cards" class="summary-grid">
+            <!-- Summary cards will be populated by JavaScript -->
+        </div>
+        <div id="agent-cards" class="agent-grid">
+            <!-- Agent performance cards will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div id="card-screen">
+        <button class="close-card-screen">&times;</button>
+        <div class="card-screen-content">
+            <div id="card-screen-details"></div>
+        </div>
+    </div>
+
+    <script>
+        let agentsData = [];
+        let currentTimeRange = 'weekly';
+
+        function generateAgentData(timeRange = 'weekly') {
+            const agents = [];
+            const avatarBaseUrl = 'https://i.pravatar.cc/150?u=';
+            
+            // Adjust multipliers based on time range
+            const timeRangeMultipliers = {
+                daily: 1,
+                weekly: 7,
+                monthly: 30,
+                custom: 1  // Will be calculated dynamically
+            };
+
+            const multiplier = timeRangeMultipliers[timeRange];
+
+            for (let i = 0; i < 10; i++) {
+                const baseExpenses = Math.floor(Math.random() * (5000 * multiplier)) + (1000 * multiplier);
+                const salesVariationFactor = 0.5 + Math.random();
+                const sales = Math.floor(baseExpenses * 30 * salesVariationFactor);
+                const actualRatio = sales / baseExpenses;
+                
+                const performancePercentage = (actualRatio / 30) * 100;
+
+                agents.push({
+                    name: `Agent ${i + 1}`,
+                    sales,
+                    expenses: baseExpenses,
+                    targetRatio: 30,
+                    actualRatio,
+                    performancePercentage,
+                    avatar: `${avatarBaseUrl}${Math.random()}`
+                });
+            }
+            return agents;
+        }
+
+        function renderSummaryCards(agents) {
+            const summaryCardsContainer = document.getElementById('summary-cards');
+            
+            const totalSales = agents.reduce((sum, agent) => sum + agent.sales, 0);
+            const totalExpenses = agents.reduce((sum, agent) => sum + agent.expenses, 0);
+            const overallRatio = totalSales / totalExpenses;
+            const overallPerformancePercentage = (overallRatio / 30) * 100;
+
+            summaryCardsContainer.innerHTML = `
+                <div class="summary-card">
+                    <h3>${currentTimeRange.charAt(0).toUpperCase() + currentTimeRange.slice(1)} Sales</h3>
+                    <div class="value" style="color: var(--accent-blue)">₱${totalSales.toLocaleString()}</div>
+                </div>
+                <div class="summary-card">
+                    <h3>${currentTimeRange.charAt(0).toUpperCase() + currentTimeRange.slice(1)} Expenses</h3>
+                    <div class="value" style="color: var(--accent-green)">₱${totalExpenses.toLocaleString()}</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Overall Performance</h3>
+                    <div class="value" style="color: var(--accent-purple)">${overallRatio.toFixed(1)}:1</div>
+                    <div class="performance-indicator ${
+                        overallPerformancePercentage > 100 ? 'positive' : 'negative'
+                    }">
+                        ${overallPerformancePercentage.toFixed(1)}%
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAgentCards(agents) {
+            agentsData = [...agents];
+            const sortedAgents = [...agents].sort((a, b) => b.actualRatio - a.actualRatio);
+            
+            const agentCardsContainer = document.getElementById('agent-cards');
+            agentCardsContainer.innerHTML = '';
+
+            sortedAgents.forEach((agent, index) => {
+                const agentCard = document.createElement('div');
+                agentCard.className = `agent-card ${
+                    agent.actualRatio > 30 ? 'high-performer' : 'low-performer'
+                }`;
+                
+                agentCard.innerHTML = `
+                    <div class="ranking-badge rank-${index + 1}">${index + 1}</div>
+                    <img src="${agent.avatar}" alt="${agent.name}" class="agent-avatar">
+                    <h3>${agent.name}</h3>
+                    <div class="performance-indicator ${
+                        agent.performancePercentage > 100 ? 'positive' : 'negative'
+                    }">
+                        Performance: ${agent.performancePercentage.toFixed(1)}%
+                    </div>
+                `;
+                
+                // Add click event to show card screen
+                agentCard.addEventListener('click', () => showCardScreen(agent, index + 1));
+                
+                agentCardsContainer.appendChild(agentCard);
+            });
+
+            // Add event listener to close card screen
+            document.querySelector('.close-card-screen').addEventListener('click', hideCardScreen);
+        }
+
+        function initializeDashboard(timeRange = 'weekly') {
+            currentTimeRange = timeRange;
+            const agents = generateAgentData(timeRange);
+            renderSummaryCards(agents);
+            renderAgentCards(agents);
+        }
+
+        // Time Range Selection Logic
+        function setupTimeRangeSelection() {
+            const timeRangeButtons = document.querySelectorAll('.time-range-btn[data-range]');
+            const customDateContainer = document.getElementById('custom-date-container');
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const applyCustomDateButton = document.getElementById('apply-custom-date');
+
+            timeRangeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    timeRangeButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const range = this.dataset.range;
+                    
+                    // Toggle custom date container visibility
+                    if (range === 'custom') {
+                        customDateContainer.classList.add('visible');
+                    } else {
+                        customDateContainer.classList.remove('visible');
+                        initializeDashboard(range);
+                    }
+                });
+            });
+
+            // Custom Date Range Application
+            applyCustomDateButton.addEventListener('click', function() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+
+                if (startDate && endDate && startDate <= endDate) {
+                    const daysDifference = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                    
+                    // Generate data based on custom date range
+                    const customAgents = generateAgentData('custom');
+                    currentTimeRange = `Custom (${daysDifference} days)`;
+                    renderSummaryCards(customAgents);
+                    renderAgentCards(customAgents);
+                } else {
+                    alert('Please select a valid date range.');
+                }
+            });
+        }
+
+        function showCardScreen(agent, rank) {
+            const cardScreen = document.getElementById('card-screen');
+            const cardScreenDetails = document.getElementById('card-screen-details');
+
+            cardScreenDetails.innerHTML = `
+                <div class="ranking-badge rank-${rank}" style="position: relative; margin: 0 auto 1rem; width: 60px; height: 60px; font-size: 1.5rem;">${rank}</div>
+                <img src="${agent.avatar}" alt="${agent.name}" style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 1rem; border: 3px solid var(--border-color);">
+                <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">${agent.name}</h2>
+                <div class="stat">
+                    <span>Sales</span>
+                    <span class="stat-value" style="color: var(--accent-blue)">₱${agent.sales.toLocaleString()}</span>
+                </div>
+                <div class="stat">
+                    <span>Expenses</span>
+                    <span class="stat-value" style="color: var(--accent-green)">₱${agent.expenses.toLocaleString()}</span>
+                </div>
+                <div class="stat">
+                    <span>Target Ratio</span>
+                    <span class="stat-value">${agent.targetRatio}:1</span>
+                </div>
+                <div class="stat">
+                    <span>Actual Ratio</span>
+                    <span class="stat-value ${
+                        agent.actualRatio > 30 ? 'text-green-600' : 'text-red-600'
+                    }">
+                        ${agent.actualRatio.toFixed(1)}:1
+                    </span>
+                </div>
+                <div class="performance-indicator ${
+                    agent.performancePercentage > 100 ? 'positive' : 'negative'
+                }" style="margin-top: 1rem;">
+                    Performance: ${agent.performancePercentage.toFixed(1)}%
+                </div>
+            `;
+
+            cardScreen.style.display = 'flex';
+        }
+
+        function hideCardScreen() {
+            const cardScreen = document.getElementById('card-screen');
+            cardScreen.style.display = 'none';
+        }
+
+        // Initialize dashboard and setup time range selection on window load
+        window.onload = () => {
+            initializeDashboard();
+            setupTimeRangeSelection();
+        };
+
+        const refreshButton = document.createElement('button');
+        refreshButton.textContent = 'Refresh Dashboard';
+        refreshButton.className = 'refresh-btn';
+        refreshButton.onclick = () => initializeDashboard(currentTimeRange);
+        document.body.appendChild(refreshButton);
+    </script>
+</body>
+</html>

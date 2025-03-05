@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Performance Data Encoder</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --warning-color: #f39c12;
+            --background-color: #f4f7fa;
+            --card-background: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .form-group input, 
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #d35400;
+        }
+
+        #encoded-output {
+            background-color: #f1f1f1;
+            padding: 20px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .agent-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .agent-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .agent-card img {
+            max-width: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .form-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agent Performance Data Encoder</h1>
+        
+        <div class="section-header">
+            <h2>Global Target Ratio</h2>
+        </div>
+        <div class="form-section">
+            <div class="form-group">
+                <label for="global-target-ratio">Global Target Ratio</label>
+                <input type="number" id="global-target-ratio" value="30" min="1" step="0.1">
+            </div>
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="setGlobalTargetRatio()">Set Global Target Ratio</button>
+                <button class="btn btn-warning" onclick="updateGlobalTargetRatio()">Update Ratio</button>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Agent Names and Avatars</h2>
+        </div>
+        <div class="form-section">
+            <div class="form-group">
+                <label for="agent-name">Agent Name</label>
+                <select id="agent-name">
+                    <option value="Agent 1">Agent 1</option>
+                    <option value="Agent 2">Agent 2</option>
+                    <option value="Agent 3">Agent 3</option>
+                    <option value="Agent 4">Agent 4</option>
+                    <option value="Agent 5">Agent 5</option>
+                    <option value="Agent 6">Agent 6</option>
+                    <option value="Agent 7">Agent 7</option>
+                    <option value="Agent 8">Agent 8</option>
+                    <option value="Agent 9">Agent 9</option>
+                    <option value="Agent 10">Agent 10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="agent-avatar">Agent Avatar URL</label>
+                <input type="text" id="agent-avatar" placeholder="https://example.com/avatar.jpg">
+            </div>
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="addAgentName()">Add Agent Name</button>
+                <button class="btn btn-warning" onclick="updateAgentName()">Update Agent</button>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Sales and Expenses</h2>
+        </div>
+        <div class="form-section">
+            <div class="form-group">
+                <label for="available-agents">Available Agents</label>
+                <select id="available-agents" disabled></select>
+            </div>
+            <div class="form-group">
+                <label for="sales">Sales (₱)</label>
+                <input type="number" id="sales" placeholder="Total Sales">
+            </div>
+            <div class="form-group">
+                <label for="sales-date">Sales Date</label>
+                <input type="date" id="sales-date">
+            </div>
+            <div class="form-group">
+                <label for="expenses">Expenses (₱)</label>
+                <input type="number" id="expenses" placeholder="Total Expenses">
+            </div>
+            <div class="form-group">
+                <label for="expenses-date">Expenses Date</label>
+                <input type="date" id="expenses-date">
+            </div>
+            <div class="buttons">
+                <button class="btn btn-secondary" onclick="addAgentPerformance()">Add Agent Performance</button>
+                <button class="btn btn-warning" onclick="updateAgentPerformance()">Update Performance</button>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Agents</h2>
+        </div>
+        <div id="agent-preview" class="agent-preview"></div>
+
+        <div class="section-header">
+            <h2>Encoded Data</h2>
+        </div>
+        <div id="encoded-output"></div>
+    </div>
+
+    <script>
+        let agentNames = [];
+        let agents = [];
+        let globalTargetRatio = 30;
+        let currentUpdateIndex = -1;
+
+        function setGlobalTargetRatio() {
+            const targetRatioInput = document.getElementById('global-target-ratio');
+            const newTargetRatio = parseFloat(targetRatioInput.value);
+
+            if (isNaN(newTargetRatio) || newTargetRatio <= 0) {
+                alert('Please enter a valid target ratio greater than 0');
+                return;
+            }
+
+            globalTargetRatio = newTargetRatio;
+            alert(`Global Target Ratio set to ${globalTargetRatio}`);
+        }
+
+        function updateGlobalTargetRatio() {
+            const targetRatioInput = document.getElementById('global-target-ratio');
+            const updateIndex = prompt('Enter the index of the agent performance to update (0-based):');
+            
+            if (updateIndex !== null && !isNaN(updateIndex)) {
+                const index = parseInt(updateIndex);
+                
+                if (index >= 0 && index < agents.length) {
+                    const newTargetRatio = parseFloat(targetRatioInput.value);
+                    
+                    if (isNaN(newTargetRatio) || newTargetRatio <= 0) {
+                        alert('Please enter a valid target ratio greater than 0');
+                        return;
+                    }
+                    
+                    // Update the agent's performance calculation
+                    agents[index].globalTargetRatio = newTargetRatio;
+                    agents[index].performancePercentage = (agents[index].actualRatio / newTargetRatio) * 100;
+                    
+                    // Update the output and preview
+                    updateEncodedOutput();
+                    updateAgentPreview();
+                    
+                    alert(`Updated global target ratio for agent at index ${index}`);
+                } else {
+                    alert('Invalid agent index');
+                }
+            }
+        }
+
+        function addAgentName() {
+            const name = document.getElementById('agent-name').value;
+            const avatarUrl = document.getElementById('agent-avatar').value || `https://i.pravatar.cc/150?u=${Math.random()}`;
+
+            // Check if this agent name already exists
+            if (agentNames.some(agent => agent.name === name)) {
+                alert('This agent has already been added');
+                return;
+            }
+
+            const agentNameObj = {
+                name,
+                avatar: avatarUrl
+            };
+
+            agentNames.push(agentNameObj);
+
+            // Update available agents dropdown
+            updateAvailableAgentsDropdown();
+
+            // Disable the selected agent name in the first dropdown
+            const selectedOption = document.querySelector(`#agent-name option[value="${name}"]`);
+            if (selectedOption) {
+                selectedOption.disabled = true;
+            }
+
+            // Clear input fields
+            document.getElementById('agent-avatar').value = '';
+        }
+
+        function updateAgentName() {
+            const updateIndex = prompt('Enter the index of the agent to update (0-based):');
+            
+            if (updateIndex !== null && !isNaN(updateIndex)) {
+                const index = parseInt(updateIndex);
+                
+                if (index >= 0 && index < agentNames.length) {
+                    const name = document.getElementById('agent-name').value;
+                    const avatarUrl = document.getElementById('agent-avatar').value || agentNames[index].avatar;
+
+                    // Update the agent name and avatar
+                    agentNames[index] = {
+                        name,
+                        avatar: avatarUrl
+                    };
+
+                    // Update available agents dropdown
+                    updateAvailableAgentsDropdown();
+                    
+                    // Update any corresponding agents with the new name
+                    agents.forEach(agent => {
+                        if (agent.name === agentNames[index].name) {
+                            agent.name = name;
+                            agent.avatar = avatarUrl;
+                        }
+                    });
+
+                    // Update the output and preview
+                    updateEncodedOutput();
+                    updateAgentPreview();
+                    
+                    alert(`Updated agent at index ${index}`);
+                } else {
+                    alert('Invalid agent index');
+                }
+            }
+        }
+
+        function updateAvailableAgentsDropdown() {
+            const availableAgentsSelect = document.getElementById('available-agents');
+            availableAgentsSelect.innerHTML = '';
+            agentNames.forEach(agent => {
+                const option = document.createElement('option');
+                option.value = agent.name;
+                option.textContent = agent.name;
+                availableAgentsSelect.appendChild(option);
+            });
+            availableAgentsSelect.disabled = false;
+        }
+
+        function addAgentPerformance() {
+            const name = document.getElementById('available-agents').value;
+            const sales = parseFloat(document.getElementById('sales').value);
+            const salesDate = document.getElementById('sales-date').value;
+            const expenses = parseFloat(document.getElementById('expenses').value);
+            const expensesDate = document.getElementById('expenses-date').value;
+
+            // Validate inputs
+            if (isNaN(sales) || isNaN(expenses)) {
+                alert('Please enter valid sales and expenses values');
+                return;
+            }
+
+            if (!salesDate || !expensesDate) {
+                alert('Please enter both sales and expenses dates');
+                return;
+            }
+
+            // Find the agent's avatar
+            const agentNameObj = agentNames.find(agent => agent.name === name);
+
+            const actualRatio = sales / expenses;
+            const performancePercentage = (actualRatio / globalTargetRatio) * 100;
+
+            const agent = {
+                name,
+                sales,
+                salesDate,
+                expenses,
+                expensesDate,
+                globalTargetRatio,
+                actualRatio,
+                performancePercentage,
+                avatar: agentNameObj.avatar
+            };
+
+            agents.push(agent);
+
+            // Update preview and output
+            updateAgentPreview();
+            updateEncodedOutput();
+
+            // Clear input fields
+            clearPerformanceInputs();
+
+            // Remove the added agent from available agents
+            removeAgentFromDropdown(name);
+        }
+
+        function updateAgentPerformance() {
+            const updateIndex = prompt('Enter the index of the agent performance to update (0-based):');
+            
+            if (updateIndex !== null && !isNaN(updateIndex)) {
+                const index = parseInt(updateIndex);
+                
+                if (index >= 0 && index < agents.length) {
+                    const sales = parseFloat(document.getElementById('sales').value);
+                    const salesDate = document.getElementById('sales-date').value;
+                    const expenses = parseFloat(document.getElementById('expenses').value);
+                    const expensesDate = document.getElementById('expenses-date').value;
+
+                    // Validate inputs
+                    if (isNaN(sales) || isNaN(expenses)) {
+                        alert('Please enter valid sales and expenses values');
+                        return;
+                    }
+
+                    if (!salesDate || !expensesDate) {
+                        alert('Please enter both sales and expenses dates');
+                        return;
+                    }
+
+                    // Update the agent's performance
+                    const actualRatio = sales / expenses;
+                    const performancePercentage = (actualRatio / agents[index].globalTargetRatio) * 100;
+
+                    agents[index] = {
+                        ...agents[index],
+                        sales,
+                        salesDate,
+                        expenses,
+                        expensesDate,
+                        actualRatio,
+                        performancePercentage
+                    };
+
+                    // Update preview and output
+                    updateAgentPre
